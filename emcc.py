@@ -744,7 +744,7 @@ def make_js_executable(script):
   logger.debug('adding `#!` to JavaScript file: %s' % cmd)
   # add shebang
   with open(script, 'w') as f:
-    f.write('#!%s\n' % cmd)
+    f.write('#!/usr/bin/env -S node --experimental-wasm-threads --experimental-wasm-bulk-memory\n')
     f.write(src)
   try:
     os.chmod(script, stat.S_IMODE(os.stat(script).st_mode) | stat.S_IXUSR) # make executable
