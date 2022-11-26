@@ -21,9 +21,27 @@ set(CMAKE_CROSSCOMPILING TRUE)
 
 # shared library (side module) support
 set_property(GLOBAL PROPERTY TARGET_SUPPORTS_SHARED_LIBS TRUE)
-set(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "-sSIDE_MODULE")    # instead of -shared
-set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "-sSIDE_MODULE")  # instead of -shared
-set(BUILD_SHARED_LIBS OFF)  # default to static libs, even if we allow shared ones
+
+set(CMAKE_STATIC_LIBRARY_PREFIX "lib")
+set(CMAKE_STATIC_LIBRARY_SUFFIX ".a")
+set(CMAKE_SHARED_LIBRARY_PREFIX "lib")
+set(CMAKE_SHARED_LIBRARY_SUFFIX ".so")
+
+set(CMAKE_FIND_LIBRARY_PREFIXES "lib")
+set(CMAKE_FIND_LIBRARY_SUFFIXES ".so" ".a" ".wasm")
+
+set(CMAKE_LIBRARY_PATH_FLAG "-L")
+set(CMAKE_LINK_LIBRARY_FLAG "-l")
+set(CMAKE_LINK_LIBRARY_FILE_FLAG "")
+set(CMAKE_LINK_LIBRARY_SUFFIX "")
+
+if(NOT DEFINED BUILD_SHARED_LIBS)
+  set(BUILD_SHARED_LIBS OFF)  # default to static libs, even if we allow shared ones
+elseif(BUILD_SHARED_LIBS)
+  #set(CMAKE_EXE_LINKER_FLAGS_INIT "-sMAIN_MODULE=1")
+  set(CMAKE_SHARED_LIBRARY_CREATE_C_FLAGS "-sSIDE_MODULE=1")    # instead of -shared
+  set(CMAKE_SHARED_LIBRARY_CREATE_CXX_FLAGS "-sSIDE_MODULE=1")  # instead of -shared
+endif()
 
 # Advertise Emscripten as a 32-bit platform (as opposed to
 # CMAKE_SYSTEM_PROCESSOR=x86_64 for 64-bit platform), since some projects (e.g.
