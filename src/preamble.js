@@ -204,6 +204,9 @@ var __ATEXIT__    = []; // functions called during shutdown
 var __ATPOSTRUN__ = []; // functions called after the main() is called
 
 #if RELOCATABLE
+if(typeof Module["relocationOffset"] == "undefined")
+  Module["relocationOffset"] = 0
+
 var __RELOC_FUNCS__ = [];
 #endif
 
@@ -846,7 +849,7 @@ function createWasm() {
     var exports = instance.exports;
 
 #if RELOCATABLE
-    exports = relocateExports(exports, {{{ GLOBAL_BASE }}});
+    exports = relocateExports(exports, Module.relocationOffset + {{{ GLOBAL_BASE }}});
 #endif
 
 #if ASYNCIFY

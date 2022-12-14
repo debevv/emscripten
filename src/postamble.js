@@ -222,7 +222,7 @@ function stackCheckInit() {
   assert(!ENVIRONMENT_IS_PTHREAD);
 #endif
 #if RELOCATABLE
-  _emscripten_stack_set_limits({{{ STACK_HIGH }}} , {{{ STACK_LOW }}});
+  _emscripten_stack_set_limits(Module.relocationOffset + {{{ STACK_HIGH }}} , Module.relocationOffset + {{{ STACK_LOW }}});
 #else
   _emscripten_stack_init();
 #endif
