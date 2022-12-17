@@ -1617,6 +1617,25 @@ var ALLOW_BLOCKING_ON_MAIN_THREAD = true;
 // [link]
 var PTHREADS_DEBUG = false;
 
+// If true, enables the use of the Module.relocationOffset runtime option. It allows assigning
+// the same Webassembly.Memory to multime main modules. It is similar to GLOBAL_OFFSET, but it can be
+// used to dynamically offset the memory location of an instance just before creating it.
+// The modules will all have their memory sections independent from each other. To make them share
+// the heap, see USE_SHARED_HEAP.
+// Implies RELOCATABLE, MODULARIZE, IMPORTED_MEMORY, USE_PTHREADS
+// [compile]
+var USE_RELOCATION_OFFSET = false;
+
+// If true, enables the use of the Module.sharedHeap runtime option.
+// This option implies USE_RELOCATION_OFFSET, so it should be used when multiple main modules
+// are given the same Webassembly.Memory. Instead of each module having its own heap space,
+// Moduile.sharedHeap allows the definition of an address where the shared heap starts.
+// Usually it shoud be after the memory area of the last loaded module instance.
+// This option should be used in conjunction with a custom allocator that is aware of the
+// __heap_base symbol and places its bookkeeping structs there
+// [compile]
+var USE_SHARED_HEAP = false;
+
 // This tries to evaluate code at compile time. The main use case is to eval
 // global ctor functions, which are those that run before main(), but main()
 // itself or parts of it can also be evalled. Evaluating code this way can avoid

@@ -4,7 +4,7 @@
  * University of Illinois/NCSA Open Source License.  Both these licenses can be
  * found in the LICENSE file.
  *
-*/
+ */
 
 #ifndef EMSCRIPTEN_NO_ERRNO
 #include <errno.h>
@@ -30,21 +30,40 @@ void emscripten_memprof_sbrk_grow(intptr_t old, intptr_t new);
 #endif
 
 extern size_t __heap_base;
+extern size_t __shared_heap;
 
 static uintptr_t sbrk_val = (uintptr_t)&__heap_base;
 
 uintptr_t* emscripten_get_sbrk_ptr() {
+  const uintptr_t* sbrk_ptr = (uintptr_t*)&__shared_heap;
+  if (sbrk_ptr != 0) {
+    // The current sbrk pointer lives at the user-provided sharedHeap memory
+    // location, found here in &__shared_heap. If 0, we may be the first module
+    // to use it, so we initialize it with an address 8 bytes after sharedHeap.
+    // This value is the effective start of sbrk of the shared heap. If already
+    // initialized, the atomic operation gives us the current value
+    const uintptr_t init_val = ((uintptr_t)sbrk_ptr) + sizeof(uintptr_t);
+    const uintptr_t zero_val = 0;
+
+    __c11_atomic_compare_exchange_strong((_Atomic(uintptr_t)*)sbrk_ptr,
+                                         (uintptr_t*)&zero_val,
+                                         init_val,
+                                         __ATOMIC_SEQ_CST,
+                                         __ATOMIC_SEQ_CST);
+    return (uintptr_t*)sbrk_ptr;
+  } else {
 #ifdef __PIC__
-  // In relocatable code we may call emscripten_get_sbrk_ptr() during startup,
+    // In relocatable code we may call emscripten_get_sbrk_ptr() during startup,
   // potentially *before* the setup of the dynamically-linked __heap_base, when
   // using SAFE_HEAP. (SAFE_HEAP instruments *all* memory accesses, so even the
   // code doing dynamic linking itself ends up instrumented, which is why we can
   // get such an instrumented call before sbrk_val has its proper value.)
-  if (sbrk_val == 0) {
-    sbrk_val = (uintptr_t)&__heap_base;
-  }
+    if (sbrk_val == 0) {
+      sbrk_val = (uintptr_t)&__heap_base;
+    }
 #endif
-  return &sbrk_val;
+    return &sbrk_val;
+  }
 }
 
 // Enforce preserving a minimal alignof(maxalign_t) alignment for sbrk.
@@ -66,7 +85,7 @@ void *sbrk(intptr_t increment_) {
 #ifdef __EMSCRIPTEN_SHARED_MEMORY__
     uintptr_t old_brk = __c11_atomic_load((_Atomic(uintptr_t)*)sbrk_ptr, __ATOMIC_SEQ_CST);
 #else
-    uintptr_t old_brk = *sbrk_ptr;
+  uintptr_t old_brk = *sbrk_ptr;
 #endif
     uintptr_t new_brk = old_brk + increment;
     // Check for an overflow, which would indicate that we are trying to
@@ -94,7 +113,7 @@ void *sbrk(intptr_t increment_) {
       continue;
     }
 #else // __EMSCRIPTEN_SHARED_MEMORY__
-    *sbrk_ptr = new_brk;
+  *sbrk_ptr = new_brk;
 #endif // __EMSCRIPTEN_SHARED_MEMORY__
 
 #ifdef __EMSCRIPTEN_TRACING__

@@ -3638,6 +3638,13 @@ mergeInto(LibraryManager.library, {
 #if MEMORY64
   __table_base32: 1,
 #endif
+
+#if USE_SHARED_HEAP
+  // The user defines Module.sharedHeap as the address where the shared heap starts. In reality
+  // at this address we store the current sbrk_ptr (64 bit pointer), the initial value of which
+  // is Module.sharedHeap + 8
+  __shared_heap: 'Module.sharedHeap',
+#endif
   // To support such allocations during startup, track them on __heap_base and
   // then when the main module is loaded it reads that value and uses it to
   // initialize sbrk (the main module is relocatable itself, and so it does not

@@ -204,10 +204,26 @@ var __ATEXIT__    = []; // functions called during shutdown
 var __ATPOSTRUN__ = []; // functions called after the main() is called
 
 #if RELOCATABLE
-if(typeof Module["relocationOffset"] == "undefined")
-  Module["relocationOffset"] = 0
-
 var __RELOC_FUNCS__ = [];
+#endif
+
+#if USE_RELOCATION_OFFSET
+#if ASSERTIONS
+assert(Module['relocationOffset'] != undefined, '`relocationOffset` must be defined when -sUSE_RELOCATION_OFFSET is defined at build time');
+#endif
+#else
+#if ASSERTIONS
+assert(!Module['relocationOffset'] == undefined, 'Use of `relocationOffset` detected without -sUSE_RELOCATION_OFFSET defined at build time');
+#endif
+Module['relocationOffset'] = 0;
+#endif
+
+#if ASSERTIONS
+#if USE_SHARED_HEAP
+assert(Module['sharedHeap'], '`sharedHeap` must be defined when -sUSE_SHARED_HEAP is defined at build time');
+#else
+assert(!Module['sharedHeap'], 'Use of `sharedHeap` detected without -sUSE_SHARED_HEAP defined at build time');
+#endif
 #endif
 
 var runtimeInitialized = false;

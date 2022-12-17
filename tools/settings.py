@@ -70,6 +70,8 @@ COMPILE_TIME_SETTINGS = {
     'DEFAULT_TO_CXX',
     'WASM_OBJECT_FILES',
     'WASM_WORKERS',
+    'USE_RELOCATION_OFFSET',
+    'USE_SHARED_HEAP',
 
     # Internal settings used during compilation
     'EXCEPTION_CATCHING_ALLOWED',
