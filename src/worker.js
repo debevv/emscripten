@@ -180,6 +180,13 @@ function handleMessage(e) {
 #if PTHREADS_DEBUG
       Module['workerID'] = e.data.workerID;
 #endif
+#if USE_RELOCATION_OFFSET
+        Module['id'] = e.data.id;
+        Module['relocationOffset'] = e.data.relocationOffset;
+#endif
+#if USE_SHARED_HEAP
+        Module['sharedHeap'] = e.data.sharedHeap;
+#endif
 
 #if !MINIMAL_RUNTIME || MODULARIZE
       {{{ makeAsmImportsAccessInPthread('ENVIRONMENT_IS_PTHREAD') }}} = true;

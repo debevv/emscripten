@@ -3639,18 +3639,30 @@ mergeInto(LibraryManager.library, {
   __table_base32: 1,
 #endif
 
-#if USE_SHARED_HEAP
-  // The user defines Module.sharedHeap as the address where the shared heap starts. In reality
-  // at this address we store the current sbrk_ptr (64 bit pointer), the initial value of which
-  // is Module.sharedHeap + 8
-  __shared_heap: 'Module.sharedHeap',
+#if USE_RELOCATION_OFFSET
+  __module_id: 'Module.id',
+#else
+  __module_id: '0',
 #endif
-  // To support such allocations during startup, track them on __heap_base and
+
+#if USE_SHARED_HEAP
+  // The user defines Module.sharedHeap as the address where the shared heap starts. It
+  // will actually start after _sbrk_ptr, which is the location where all the sbrk()s can load/save
+  // the current sbrk pointer, and __malloc_sync, an address all malloc()s can use to synchronize
+  // during initialization
+  __sbrk_ptr: 'Module.sharedHeap',
+  __malloc_sync: 'Module.sharedHeap + 8',
+  __heap_base: 'Module.sharedHeap + 16',
+#else
+// To support such allocations during startup, track them on __heap_base and
   // then when the main module is loaded it reads that value and uses it to
   // initialize sbrk (the main module is relocatable itself, and so it does not
   // have __heap_base hardcoded into it - it receives it from JS as an extern
   // global, basically).
+  __sbrk_ptr: '0',
+  __malloc_sync: '0',
   __heap_base: 'Module.relocationOffset + {{{ HEAP_BASE }}}',
+#endif
   __stack_high: 'Module.relocationOffset + {{{ STACK_HIGH }}}',
   __stack_low: 'Module.relocationOffset + {{{ STACK_LOW }}}',
   __global_base: 'Module.relocationOffset + {{{ GLOBAL_BASE }}}',

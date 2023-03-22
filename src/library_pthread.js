@@ -393,6 +393,13 @@ var LibraryPThread = {
 #if PTHREADS_DEBUG
         'workerID': PThread.nextWorkerID++,
 #endif
+#if USE_RELOCATION_OFFSET
+        'id': Module['id'],
+        'relocationOffset': Module['relocationOffset'],
+#endif
+#if USE_SHARED_HEAP
+        'sharedHeap': Module['sharedHeap'],
+#endif
       });
     }),
 

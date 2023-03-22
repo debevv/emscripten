@@ -30,19 +30,19 @@ void emscripten_memprof_sbrk_grow(intptr_t old, intptr_t new);
 #endif
 
 extern size_t __heap_base;
-extern size_t __shared_heap;
+extern size_t __sbrk_ptr;
 
 static uintptr_t sbrk_val = (uintptr_t)&__heap_base;
 
 uintptr_t* emscripten_get_sbrk_ptr() {
-  const uintptr_t* sbrk_ptr = (uintptr_t*)&__shared_heap;
+  const uintptr_t* sbrk_ptr = (uintptr_t*)&__sbrk_ptr;
+  // If sbrk_ptr != 0, we are in shared heap mode
   if (sbrk_ptr != 0) {
     // The current sbrk pointer lives at the user-provided sharedHeap memory
-    // location, found here in &__shared_heap. If 0, we may be the first module
-    // to use it, so we initialize it with an address 8 bytes after sharedHeap.
-    // This value is the effective start of sbrk of the shared heap. If already
-    // initialized, the atomic operation gives us the current value
-    const uintptr_t init_val = ((uintptr_t)sbrk_ptr) + sizeof(uintptr_t);
+    // location, found here in &__sbrk_ptr. If 0, we may be the first module
+    // to use it, so we initialize it with __heap_base
+    // after sharedHeap. This value is the effective start of sbrk of the shared heap
+    const uintptr_t init_val = (uintptr_t) &__heap_base;
     const uintptr_t zero_val = 0;
 
     __c11_atomic_compare_exchange_strong((_Atomic(uintptr_t)*)sbrk_ptr,

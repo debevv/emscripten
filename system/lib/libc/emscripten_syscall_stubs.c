@@ -24,7 +24,10 @@
 #include <emscripten/console.h>
 #include <emscripten/version.h>
 
-static int g_pid = 42;
+extern uintptr_t __module_id;
+
+// TODO getpid() could not be considered dummy anymore?
+static int g_pid = (int) &__module_id;
 static int g_pgid = 42;
 static int g_ppid = 1;
 static int g_sid = 42;
