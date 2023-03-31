@@ -211,7 +211,7 @@ var __RELOC_FUNCS__ = [];
 #if ASSERTIONS
 assert(Module['relocationOffset'] != null, '`relocationOffset` must be defined when -sUSE_RELOCATION_OFFSET is defined at build time');
 assert(Module['id'] != null, '`id` must be defined when -sUSE_RELOCATION_OFFSET is defined at build time');
-assert(Module['id'] > 1, '`id` must be > 1');
+assert(Module['id'] > 0, '`id` must be > 0');
 #endif
 #else
 #if ASSERTIONS
@@ -842,6 +842,17 @@ function resetPrototype(constructor, attrs) {
 }
 #endif
 
+#if USE_RELOCATION_OFFSET
+function relocateASM_CONSTS(base) {
+  for(const sk of Object.keys(ASM_CONSTS)) {
+      const k = parseInt(sk);
+      const v = ASM_CONSTS[k];
+      delete ASM_CONSTS[k];
+      ASM_CONSTS[base + k] = v;
+  }
+}
+#endif
+
 // Create the wasm instance.
 // Receives the wasm imports, returns the exports.
 function createWasm() {
@@ -870,6 +881,10 @@ function createWasm() {
 
 #if RELOCATABLE
     exports = relocateExports(exports, Module.relocationOffset + {{{ GLOBAL_BASE }}});
+#endif
+
+#if USE_RELOCATION_OFFSET
+    relocateASM_CONSTS(Module.relocationOffset);
 #endif
 
 #if ASYNCIFY
